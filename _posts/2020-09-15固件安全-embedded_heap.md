@@ -1,4 +1,9 @@
-
+---
+layout: post
+title: 固件安全-embedd_heap
+description: 学习固件安全中的heap,持续更新....
+categories:  固件安全
+---
 
 
 
