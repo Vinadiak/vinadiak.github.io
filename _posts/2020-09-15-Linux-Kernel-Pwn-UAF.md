@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Linux  Kernel  Pwn  UAF
-description: 学习Linux Kernel PWN 的UAF漏洞
+description: 无论在PWN题还是现实环境中，UAF是非常强大而且容易出现的漏洞，本篇主要学习Linux Kernel PWN 的UAF漏洞，如何用UAF达到提权的目的。
 categories:  Linux-Kernel-Pwn
 ---
 
