@@ -1,16 +1,13 @@
-
-
 ---
 layout: post
-title: HWS cookie
+title: HWS_cookie
+description: HWS非常难的一道题，通过这个可以学习IO_FILE_LIST的使用和large bin attack
+categories: CTF/PWN
 
-description: 本题是HWS cookie，用了UAF,largebin_attack,io_file,tcache_attack等知识，综合性较高，难度较大
-
-categories:  CTF
 
 ---
 
-
+<!-- more -->
 
 # 前言
 
