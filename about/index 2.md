@@ -1,8 +1,9 @@
 ---
-title: about Me
+title: About Me
 layout: page
 type: about
 ---
+# 关于我
 
 ### 0x01 专业技能
 
