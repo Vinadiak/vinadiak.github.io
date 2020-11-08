@@ -1,4 +1,4 @@
---------------------------------------------------------------
+# ---------------------------------------------------------------
 # Jekyll & Global Configuration
 ## Docs: https://jekyllrb.com/docs/configuration/
 # ---------------------------------------------------------------
@@ -6,7 +6,7 @@
 # Site
 title: Vinadiak's Blog
 subtitle: IOT security lover
-description: 一定要相信自己
+description:  
 author: Vinadiak
 # Support language: de, en, fr-FR, id, ja, ko, pt-BR, pt, ru, zh-Hans, zh-hk, zh-tw
 language: zh-Hans
@@ -21,9 +21,9 @@ permalink: pretty
 # Pagination
 paginate: 10
 #paginate_path: "/page:num/"
-archive:
-  paginate: 10
-  paginate_path: "/page:num/"
+#archive:
+  #paginate: 10
+  #paginate_path: "/page:num/"
 #category:
   #paginate: 10
   #paginate_path: "/page:num/"
@@ -79,7 +79,7 @@ plugins:
 favicon: /assets/favicon.ico
 
 # Set default keywords (Use a comma to separate)
-keywords: "CTF or IOT Sec"
+keywords: "IOT security"
 
 # Set rss to false to disable feed link.
 # Leave rss as empty to use site's feed link.
@@ -93,7 +93,7 @@ rss:
 authoricon: heart
 
 # Footer `powered-by` and `theme-info` copyright
-copyright: true
+copyright: false
 
 # ---------------------------------------------------------------
 # SEO Settings
@@ -121,7 +121,7 @@ menu:
   categories: /categories/
   about: /about/
   archives: /archives/
-  #tags: /tags/
+  tags: /tags/
   #sitemap: /sitemap.xml
   #commonweal: /404.html
 
@@ -213,8 +213,8 @@ font:
 # Social Links
 # Key is the link label showing to end users.
 # Value is the target link (E.g. GitHub: https://github.com/iissnan)
-#social:
-  #LinkLabel: Link
+social:
+  GitHub: https://github.com/VinadiakT
 
 
 # Social Links Icons
@@ -227,8 +227,8 @@ social_icons:
   # Icon Mappings.
   # KeyMapsToSocialItemKey: NameOfTheIconFromFontAwesome
   GitHub: github
-  Twitter: twitter
-  Weibo: weibo
+  #Twitter: twitter
+  #Weibo: weibo
 
 
 # Sidebar Avatar
@@ -281,11 +281,12 @@ sidebar:
 
 
 # Blog rolls
-#links_title: 
+#links_title: Links
 #links_layout: block
 #links_layout: inline
 links:
   老三师傅: http://www.ol4three.com
+
 
 
 # ---------------------------------------------------------------
