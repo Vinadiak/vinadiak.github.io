@@ -3,15 +3,15 @@ title: About Me
 layout: page
 type: about
 ---
-# 关于我
 
 ### 0x01 专业技能
 
-比较熟悉Python、C、ARM以及Intel汇编
+* 比较熟悉Python、C、ARM以及Intel汇编
 
-熟悉IDA、gdb等工具使用
+* 熟悉IDA、gdb等工具使用
 
-了解Linux平台下常见的漏洞类型、以及相关利用技术及缓解措施。
+* 了解Linux平台下常见的漏洞类型、以及相关利用技术及缓解措施。
+* 了解MIPS
 
 ### 0x02 实习经历
 
