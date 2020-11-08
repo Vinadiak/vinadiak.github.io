@@ -1,0 +1,143 @@
+---
+layout: post
+title: ARM架构知识点
+description:整理一些ARM的知识点，以及通过一遍CTF题目来深入到ARM的世界中
+categories:  ARM
+---
+
+<!--more-->
+
+## 前言
+
+没想到有幸能进入西湖论剑IoT闯关赛，针对这次线下赛，给自己做一些特训，针对ARM架构的一些知识点进行补充和整理
+
+## ARM
+
+Arm架构是RISC,相对于Intel的CISC比较精简，但功能可能没有相对那么强大。
+
+### 寄存器
+
+arm架构中有30个32位通用寄存器,前16个可在用户级模式下访问
+
+R0-R15分为通用寄存器和专用寄存器
+
+32位
+
+| 寄存器 | 别名 | 用途                            |
+| ------ | ---- | ------------------------------- |
+| R0     | -    | 通用                            |
+| R1     | -    | 通用                            |
+| R2     | -    | 通用                            |
+| R3     | -    | 通用                            |
+| R4     | -    | 通用                            |
+| R5     | -    | 通用                            |
+| R6     | -    | Syscall number                  |
+| R7     | -    | 通用                            |
+| R8     | -    | 通用                            |
+| R9     | -    | 通用                            |
+| R10    | -    | 通用                            |
+| R11    | FP   | Frame pointer(类似EBP)          |
+| R12    | IP   | 程序调用                        |
+| R13    | SP   | 堆栈指针（类似ESP）             |
+| R14    | LR   | 链接调用函数                    |
+| R15    | PC   | 程序计数器                      |
+| CSPR   | -    | Current Program Status Register |
+
+64位:
+
+|  寄存器   |            别名            |
+| :-------: | :------------------------: |
+|  X0 – X7  | arguments and return value |
+| X8 – X18  |    temporary registers     |
+| X19 – X28 |   callee-saved registers   |
+|    X29    |       frame pointer        |
+|    X30    |       link register        |
+|    SP     |       stack pointer        |
+
+这个表标注了ARM的一些常见知识点
+
+没事的话可以拿来熟读一下
+
+![img](https://azeria-labs.com/downloads/cheatsheetv1.3-1920x1080.png)
+
+图片来源：https://azeria-labs.com/assembly-basics-cheatsheet/
+
+
+
+# 例子
+
+> 下面以一道简单的CTF的题来进入ARM的世界
+
+## [b01lers2020]train_arms
+
+这道题非常简单，一个main.s文件和一个result.txt
+
+Result.txt：
+
+>  7049744c7b5e721e31447375641a6e5e5f42345c337561586d597d
+
+main.s:
+
+```
+.cpu cortex-m0
+.thumb
+.syntax unified
+.fpu softvfp
+
+
+.data 
+    flag: .string "REDACTED" //len = 28
+
+.text
+.global main
+main:
+    ldr r0,=flag
+    eors r1,r1
+    eors r2,r2
+    movs r7,#1
+    movs r6,#42
+loop:
+    ldrb r2,[r0,r1]
+    cmp r2,#0
+    beq exit
+    lsls r3,r1,#0
+    ands r3,r7
+    cmp r3,#0
+    bne f1//if odd
+    strb r2,[r0,r1]
+    adds r1,#1
+    b loop
+f1:
+    eors r2,r6
+    strb r2,[r0,r1]
+    adds r1,#1
+    b loop
+
+exit:
+    wfi
+```
+
+
+
+逻辑就是循环去flag的每一个字符，然后如果下表位是奇数位则flag[i]^42否则flag[i]不做处理
+
+其中要注意的是  instruction**（s）** 代表更新标志位 
+
+这样逆向处理就是
+
+```python
+a = "7049744c7b5e721e31447375641a6e5e5f42345c337561586d597d"
+j = 0
+for i in range(0,len(a),2):
+    if j%2 ==1:
+        print chr(int(a[i] + a[i + 1], 16) ^ 42),
+    else:
+        print chr(int(a[i]+a[i+1],16)),
+    j = j+1
+
+# pctf{tr41ns_d0nt_h4v3_arms}
+```
+
+# 结语
+
+希望我这篇小文章对你有帮助
