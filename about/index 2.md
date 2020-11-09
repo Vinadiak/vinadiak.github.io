@@ -25,3 +25,8 @@ type: about
 * 2019年全国信息安全大赛省二等奖.
 * 2020年华为安全精英训练营成员.
 * 2020年受邀参加西湖论剑IOT闯关赛.
+
+### 0x04 Contact
+
+* email: VinadiakT@outlook.com
+
